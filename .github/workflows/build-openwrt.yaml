@@ -1,0 +1,153 @@
+name: Build OpenWrt for GL-MT6000
+
+permissions:
+  contents: write
+  actions: write
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: "38 1 * * *"
+
+env:
+  REMOTE_REPOSITORY: pesa1234/openwrt
+  CONFIG_FILE: mt6000.config
+  CUSTOM_FILES_FOLDER: files
+  GH_TOKEN: ${{ github.token }}
+
+jobs:
+  check_commits:
+    name: Check for new commits
+    runs-on: ubuntu-24.04-arm
+    outputs:
+      remote_branch: ${{ steps.check_commits.outputs.remote_branch }}
+      release_prefix: ${{ steps.check_commits.outputs.release_prefix }}
+      new_commits: ${{ steps.check_commits.outputs.new_commits }}
+      latest_commit_sha: ${{ steps.check_commits.outputs.latest_commit_sha }}
+    steps:
+      - name: Check for new commits in pesa1234 repo
+        id: check_commits
+        run: |
+          remote_branch=$(git ls-remote https://github.com/${{ env.REMOTE_REPOSITORY }}.git --h "refs/heads/next-*" | tail -n1 | sed -e 's|\(.*heads/\)||')
+          release_prefix="${remote_branch%.rss*}"
+          latest_commit_sha=$(gh api "repos/${{ env.REMOTE_REPOSITORY }}/commits/${remote_branch}" --jq .sha)
+          gh api "repos/${{ github.repository }}/releases/latest" --jq .body | grep -qz -m 1 "${latest_commit_sha}" && echo "new_commits=false" >> $GITHUB_OUTPUT || echo "new_commits=true" >> $GITHUB_OUTPUT
+          echo "remote_branch=${remote_branch}" >> $GITHUB_OUTPUT
+          echo "release_prefix=${release_prefix}" >> $GITHUB_OUTPUT
+          echo "latest_commit_sha=$latest_commit_sha" >> $GITHUB_OUTPUT
+
+  build:
+    name: Build OpenWrt
+    needs: check_commits
+    if: github.event_name == 'workflow_dispatch' || needs.check_commits.outputs.new_commits == 'true'
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt remove -y '*cloud*' '*firefox*' '*chrome*' '*dotnet*' '*php*'
+          sudo apt full-upgrade -y
+          sudo apt install -y build-essential clang flex bison g++ gawk gettext libncurses-dev libssl-dev python3-setuptools rsync swig unzip zlib1g-dev file wget llvm
+          sudo apt autoremove -y
+          sudo apt clean -y
+
+      - name: Checkout remote repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.REMOTE_REPOSITORY }}
+          ref: ${{ needs.check_commits.outputs.remote_branch }}
+
+      - name: Checkout current repository
+        uses: actions/checkout@v4
+        with:
+          path: "builder_repo"
+
+      - name: Update and install feeds
+        run: |
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
+          # run again because sometimes it misses some dependencies
+          ./scripts/feeds install -a
+
+      - name: Setup configuration and custom files
+        run: |
+          mv -v builder_repo/${{ env.CUSTOM_FILES_FOLDER }} ./
+          mv -v builder_repo/${{ env.CONFIG_FILE }} .config
+          sed -i '/odhcp/I{s/=.*$/=n/}' .config
+          sed -i '/upnp/I{s/=.*$/=n/}' .config
+          sed -i '/-ipt/I{s/=.*$/=n/}' .config
+          sed -i '/xtables/I{s/=.*$/=n/}' .config
+          sed -i '/iptables/I{s/=.*$/=n/}' .config
+          sed -i '/ip6tables/I{s/=.*$/=n/}' .config
+          sed -i '/libiptext/I{s/=.*$/=n/}' .config
+          sed -i '/aquantia/I{s/=.*$/=n/}' .config
+          sed -i '/ip6tables/I{s/=.*$/=n/}' .config
+          make defconfig
+          
+          # Repeat because 'make defconfig' restores some of this values
+          sed -i '/odhcp/I{s/=.*$/=n/}' .config
+          sed -i '/upnp/I{s/=.*$/=n/}' .config
+          sed -i '/-ipt/I{s/=.*$/=n/}' .config
+          sed -i '/xtables/I{s/=.*$/=n/}' .config
+          sed -i '/iptables/I{s/=.*$/=n/}' .config
+          sed -i '/ip6tables/I{s/=.*$/=n/}' .config
+          sed -i '/libiptext/I{s/=.*$/=n/}' .config
+          sed -i '/aquantia/I{s/=.*$/=n/}' .config
+          sed -i '/ip6tables/I{s/=.*$/=n/}' .config
+
+      - name: Build firmware
+        run: |
+          make download -j$(nproc) || {
+            echo "Retrying..."
+            sleep 120
+            make download -j1 V=99
+          }
+          make -j$(nproc) || {
+            echo "Retrying..."
+            sleep 120
+            make -j1 V=99
+          }
+          mkdir -p firmware
+          find ./bin -type f \( -ipath '*/targets/mediatek/filogic/*' -and -not -ipath '*/packages/*' \) -exec mv {} ./firmware/ \; ||:
+          mv .config firmware/full.config ||:
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: gl-mt6000-images
+          path: firmware/*
+
+      - name: Create release
+        run: |
+          RELEASE_DATE=$(date +%F)
+          gh release delete "${{ needs.check_commits.outputs.release_prefix }}-${RELEASE_DATE}" --cleanup-tag -y --repo "${{ github.repository }}" || ${{ true }}
+          gh release create "${{ needs.check_commits.outputs.release_prefix }}-${RELEASE_DATE}" --repo "${{ github.repository }}" --latest --notes "## 📦 OpenWrt Automated Build Release
+          ### 🔄 Main Repository
+          - **Repository:** [${{ env.REMOTE_REPOSITORY }}](https://github.com/${{ env.REMOTE_REPOSITORY }})
+          - **Branch:** ${{ needs.check_commits.outputs.remote_branch }}
+          - **Commit:** ${{ needs.check_commits.outputs.latest_commit_sha }}
+          
+          ### 📝 Build Information
+          - **Target:** [Flint 2 (GL-MT6000)](https://openwrt.org/toh/gl.inet/gl-mt6000)
+          - **Configuration:** [${{ env.CONFIG_FILE }}](${{ env.CONFIG_FILE }})
+          - **WiFi UCODE scripts**
+          - **Wireguard VPN**
+          - **Policy Based Routing**
+          - **Ad Block Fast**
+          - IPv6 and DHCPv6 **disabled**
+
+          
+          ### 📋 Notes
+          - Automated build triggered by ${{ github.event_name }}
+          - Older releases are automatically deleted (keeping latest 5)
+          
+          🤖 _Generated by GitHub Actions_ 🤖" --title "OpenWrt Custom Release for Flint 2 (${{ needs.check_commits.outputs.release_prefix }}-${RELEASE_DATE})" firmware/*
+
+      - name: Clean up old releases
+        run: |
+          gh api repos/${{ github.repository }}/releases --paginate --jq '.[5:] | .[] | "\(.id) \(.tag_name)"' | while read id tag; do
+            gh api -X DELETE "repos/${{ github.repository }}/releases/$id" && gh api -X DELETE "repos/${{ github.repository }}/git/refs/tags/$tag" 2>/dev/null || true
+          done
