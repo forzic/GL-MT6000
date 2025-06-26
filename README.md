@@ -16,7 +16,7 @@ This firmware adds:
 And also:
 - odhcp, upnp, iptables, dnsmasq_full_dhcpv6 packages **REMOVED** 
 - IPv6 disabled. Check the content of [`sysctl.conf`](files/etc/sysctl.conf).
-- Some compiler optimizations and build hardening options (cortex-a53 + crc + crypto; LTO, MOLD, MKLIBS, and more). Check the content of [`mt6000.config`](mt6000.config).
+- Some compiler optimizations and build hardening options (cortex-a53 + crc + crypto; LTO, MOLD, and more). Check the content of [`mt6000.config`](mt6000.config).
 - SSH configuration with strong algorithms and key exchange methods. Check the content of [`ssh_hardening.config`](files/etc/ssh/sshd_config.d/ssh_hardening.conf).
 - Quality-of-life enhancements through UCI configuration. Check the content of [`999-QOL_config`](files/etc/uci-defaults/999-QOL_config).
 - Some debug stuff removed.
