@@ -119,7 +119,7 @@ jobs:
           - **Ad Block Fast**
           - IPv6 and DHCPv6 **DISABLED and partially REMOVED**
           - Samba and usb storage support **REMOVED**
-          - iptables support **REMOVED**
+          - iptables and avahi **REMOVED**
           
           ### 📋 Notes
           - Automated build triggered by ${{ github.event_name }}

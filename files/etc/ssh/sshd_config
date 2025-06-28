@@ -13,7 +13,7 @@
 Include /etc/ssh/sshd_config.d/*.conf
 
 #Port 22
-#AddressFamily any
+AddressFamily inet
 #ListenAddress 0.0.0.0
 #ListenAddress ::
 
