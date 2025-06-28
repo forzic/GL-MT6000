@@ -76,27 +76,7 @@ jobs:
         run: |
           mv -v builder_repo/${{ env.CUSTOM_FILES_FOLDER }} ./
           mv -v builder_repo/${{ env.CONFIG_FILE }} .config
-          sed -i '/odhcp/I{s/=.*$/=n/}' .config
-          sed -i '/upnp/I{s/=.*$/=n/}' .config
-          sed -i '/-ipt/I{s/=.*$/=n/}' .config
-          sed -i '/xtables/I{s/=.*$/=n/}' .config
-          sed -i '/iptables/I{s/=.*$/=n/}' .config
-          sed -i '/ip6tables/I{s/=.*$/=n/}' .config
-          sed -i '/libiptext/I{s/=.*$/=n/}' .config
-          sed -i '/aquantia/I{s/=.*$/=n/}' .config
-          sed -i '/ip6tables/I{s/=.*$/=n/}' .config
           make defconfig
-          
-          # Repeat because 'make defconfig' restores some of this values
-          sed -i '/odhcp/I{s/=.*$/=n/}' .config
-          sed -i '/upnp/I{s/=.*$/=n/}' .config
-          sed -i '/-ipt/I{s/=.*$/=n/}' .config
-          sed -i '/xtables/I{s/=.*$/=n/}' .config
-          sed -i '/iptables/I{s/=.*$/=n/}' .config
-          sed -i '/ip6tables/I{s/=.*$/=n/}' .config
-          sed -i '/libiptext/I{s/=.*$/=n/}' .config
-          sed -i '/aquantia/I{s/=.*$/=n/}' .config
-          sed -i '/ip6tables/I{s/=.*$/=n/}' .config
 
       - name: Build firmware
         run: |
@@ -137,8 +117,9 @@ jobs:
           - **Wireguard VPN**
           - **Policy Based Routing**
           - **Ad Block Fast**
-          - IPv6 and DHCPv6 **disabled**
-
+          - IPv6 and DHCPv6 **DISABLED and partially REMOVED**
+          - Samba and usb storage support **REMOVED**
+          - iptables support **REMOVED**
           
           ### 📋 Notes
           - Automated build triggered by ${{ github.event_name }}

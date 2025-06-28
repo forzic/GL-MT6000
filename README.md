@@ -2,7 +2,7 @@
 
 This repository automates the process of building OpenWrt custom firmware images for **MY** Flint 2 (GL-MT6000) router, based on [pesa1234](https://github.com/pesa1234)'s work and **MY PREFERENCES**.
 
-You should not use the firmwares released in this repository unless you have the same preferences.
+You should **not use** the firmwares released in this repository unless you have the same preferences/needs.
 Instead, make a fork and adapt to your needs.
 
 Read [this topic](https://forum.openwrt.org/t/mt6000-custom-build-with-luci-and-some-optimization-kernel-6-12-x/185241) in OpenWrt's forum to learn the details about pesa1234's customizations.
@@ -14,12 +14,12 @@ This firmware adds:
 - **AdBlock Fast** (ads and malware blocking at DNS level)
 
 And also:
-- odhcp, upnp, iptables, dnsmasq_full_dhcpv6 packages **REMOVED** 
-- IPv6 disabled. Check the content of [`sysctl.conf`](files/etc/sysctl.conf).
+- odhcp, upnp, iptables, samba, usb storage, dnsmasq_full_dhcpv6 packages **REMOVED** 
+- IPv6 disabled and partially removed. Check the content of [`sysctl.conf`](files/etc/sysctl.conf).
 - Some compiler optimizations and build hardening options (cortex-a53 + crc + crypto; LTO, MOLD, and more). Check the content of [`mt6000.config`](mt6000.config).
 - SSH configuration with strong algorithms and key exchange methods. Check the content of [`ssh_hardening.config`](files/etc/ssh/sshd_config.d/ssh_hardening.conf).
 - Quality-of-life enhancements through UCI configuration. Check the content of [`999-QOL_config`](files/etc/uci-defaults/999-QOL_config).
-- Some debug stuff removed.
+- Some debug and kernel stuff removed.
 
 
 ## SSH Hardening
