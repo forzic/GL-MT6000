@@ -1,0 +1,38 @@
+#!/bin/sh
+{
+if [ -e /var/run/upgrade_openwrt ]; then
+  echo -e "*** UPGRADE SCRIPT ALREADY RUNNING ***\n*** Delete '/var/run/upgrade_openwrt' if not. ***"
+else
+  touch /var/run/upgrade_openwrt
+  GITHUBREPOSITORY='XXXXXX/XXXXXX'
+  eval "$(grep -m 1 DISTRIB_REVISION /etc/openwrt_release)"
+  SYSUPGRADEFILE=$(curl -sS https://api.github.com/repos/${GITHUBREPOSITORY}/releases/latest | jq -r '.assets.[].browser_download_url' | grep 'sysupgrade' | grep -v "$DISTRIB_REVISION")
+  SHA256SUMFILE=$(curl -sS https://api.github.com/repos/${GITHUBREPOSITORY}/releases/latest | jq -r '.assets.[].browser_download_url' | grep 'sha256sums')
+
+  if [ -n "$DISTRIB_REVISION" ] && [ -n "$SYSUPGRADEFILE" ] && [ -n "$SHA256SUMFILE" ] && cd /tmp ; then
+    NEWVERSION="${SYSUPGRADEFILE#*snapshot-}"
+    echo "*** NEW FIRMWARE FOUND (${NEWVERSION%-mediatek*}) ***"
+    if [ "$1" = "--wait" ]; then
+      while ip neigh | grep -v eth1 | grep -q REACHABLE ; do
+        echo "*** THERE ARE ACTIVE CLIENTS, WAITING 5 MINUTES ***"
+        sleep 300
+      done
+    fi
+    if [ "$1" = "--now" ] || [ "$1" = "--wait" ]; then
+      if curl -sOL "$SYSUPGRADEFILE" && curl -sL "$SHA256SUMFILE" | grep 'sysupgrade' | sha256sum -cs ; then
+        echo "*** INSTALLING NEW FIRMWARE ***"
+        sysupgrade -v "${SYSUPGRADEFILE##*/}"
+      else
+        echo "*** ERROR IN FIRMWARE FILE ***"
+        rm -f "${SYSUPGRADEFILE##*/}"
+      fi
+      echo "*** END OF UPGRADE SCRIPT ***"
+    elif [ "$1" != "--check" ]; then
+      echo -e "*** Usage: $0 --now   (upgrade firmware now)               ***\n***        $0 --wait  (upgrade when no clients are active) ***\n***        $0 --check (do not install new firmware) ***"
+    fi
+  else
+    echo "*** NO NEW FIRMWARE FOUND (current is $DISTRIB_REVISION) ***"
+  fi
+  rm -f /var/run/upgrade_openwrt
+fi
+} 2>&1 | tee /dev/stderr | logger $([ ${DEBUG+x} ] && echo "-p user.debug") -t $(echo $(basename $0) | grep -Eo '^.{0,23}')[$$]
