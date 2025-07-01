@@ -13,7 +13,7 @@ on:
     - cron: "38 0 * * *"
 
 env:
-  DISABLEDIPV6: /IPv6_disabled
+  WANTEDVERSION: IPv4
   REMOTE_REPOSITORY: pesa1234/openwrt
   CONFIG_FILE: mt6000.config
   GH_TOKEN: ${{ github.token }}
@@ -74,10 +74,10 @@ jobs:
 
       - name: Setup configuration and custom files
         run: |
-          mv -v builder_repo${{ env.DISABLEDIPV6 }}/files ./
+          mv -v builder_repo/${{ env.WANTEDVERSION }}/files ./
           sed -i 's|XXXXXX/XXXXXX|${{ github.repository }}|' ./files/usr/bin/upgrade_custom_openwrt || exit 1
           chmod 755 ./files/usr/bin/upgrade_custom_openwrt
-          mv -v builder_repo${{ env.DISABLEDIPV6 }}/${{ env.CONFIG_FILE }} .config
+          mv -v builder_repo/${{ env.WANTEDVERSION }}/${{ env.CONFIG_FILE }} .config
           make defconfig
 
       - name: Build firmware

@@ -28,8 +28,8 @@ Check the content of [`mt6000.config`](mt6000.config) and [`sysctl.conf`](files/
 
 ## Restore IPv6 and ppp support
 
-I you fork this repository only to restore IPv6 and ppp full support, you only need to delete or comment this line in [build-openwrt.yaml](.github/workflows/build-openwrt.yaml):  
-`  DISABLEDIPV6: /IPv6_disabled`   -->   `# DISABLEDIPV6: /IPv6_disabled`
+If you fork this repository and want to restore IPv6 and ppp full support, you only need to change this line in [build-openwrt.yaml](.github/workflows/build-openwrt.yaml):  
+`WANTEDVERSION: IPv4` --> `WANTEDVERSION: IPv6`
 
 
 
