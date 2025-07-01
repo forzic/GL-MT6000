@@ -17,12 +17,12 @@ And also:
 - **REMOVED:** odhcp, upnp, iptables, avahi, samba, usb storage, ppp and probably more stuff I forgot to mention.
 - IPv6 disabled and partially removed (only because it's not possible to remove IPv6 support completely).
 - Some compiler optimizations and build hardening options (cortex-a53 + crc + crypto; LTO, MOLD, and more).
-- SSH configuration with strong algorithms and key exchange methods, **also with IPv6 disabled**. Check the content of [`ssh_hardening.config`](files/etc/ssh/sshd_config.d/ssh_hardening.conf) and [`sshd_config`](files/etc/sshd_config).
-- Quality-of-life enhancements through UCI configuration. Check the content of [`999-QOL_config`](files/etc/uci-defaults/999-QOL_config).
+- SSH configuration with strong algorithms and key exchange methods, **also with IPv6 disabled**. Check the content of [`ssh_hardening.config`](IPv4/files/etc/ssh/sshd_config.d/ssh_hardening.conf) and [`sshd_config`](IPv4/files/etc/sshd_config).
+- Quality-of-life enhancements through UCI configuration. Check the content of [`999-QOL_config`](IPv4/files/etc/uci-defaults/999-QOL_config).
 - Some debug and kernel stuff removed.
-- [`upgrade_custom_openwrt`](files/usr/bin/upgrade_custom_openwrt) script
+- [`upgrade_custom_openwrt`](IPv4/files/usr/bin/upgrade_custom_openwrt) script
 
-Check the content of [`mt6000.config`](mt6000.config) and [`sysctl.conf`](files/etc/sysctl.conf).
+Check the content of [`mt6000.config`](IPv4/mt6000.config) and [`sysctl.conf`](IPv4/files/etc/sysctl.conf).
 
 
 
