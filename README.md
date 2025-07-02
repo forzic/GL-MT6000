@@ -49,9 +49,7 @@ I added a script to make upgrading OpenWRT super easy. Just run from a SSH termi
 - `upgrade_custom_openwrt --wait` to wait for clients activity to stop before upgrading.
 - `upgrade_custom_openwrt --check` to check for new versions but not upgrade the router.
 
-This is planned for scheduling the script to be executed automatically, although **THIS IS NOT RECOMMENDED** if you are not willing to accept that there's always a (small) risk of a bad upgrade file soft bricking the router.
-
-The script is very careful and checks sha256sums before trying to upgrade, but don't blame me if something goes wrong with scripts that **YOU** run in your router!
+**IT IS NOT RECOMMENDED** to schedule the script to be executed automatically, although the script is very careful and checks sha256sums before trying to upgrade. Don't blame me if something goes wrong with scripts that **YOU** run in your router!
 
 Notes:
 - if you fork this repository, the script will be adapted to look for upgrades in your repository.
