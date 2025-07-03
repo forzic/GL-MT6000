@@ -104,6 +104,8 @@ jobs:
 
       - name: Create release
         run: |
+          [ "${{ env.WANTEDVERSION }}" = "IPv4" ] && BUILDINFO="- IPv6 and DHCPv6 **DISABLED and partially REMOVED**\n- odhcp, upnp, iptables, avahi, samba, usb storage, ppp... **REMOVED**"
+          
           RELEASE_DATE=$(date +%F)
           gh release delete "${{ needs.check_commits.outputs.release_prefix }}-${RELEASE_DATE}" --cleanup-tag -y --repo "${{ github.repository }}" || ${{ true }}
           gh release create "${{ needs.check_commits.outputs.release_prefix }}-${RELEASE_DATE}" --repo "${{ github.repository }}" --latest --notes "## 📦 OpenWrt Automated Build Release
@@ -119,9 +121,7 @@ jobs:
           - **Wireguard VPN**
           - **Policy Based Routing**
           - **Ad Block Fast**
-          - IPv6 and DHCPv6 **DISABLED and partially REMOVED**
-          - Samba, avahi and usb storage support **REMOVED**
-          - iptables **REMOVED**
+          $BUILDINFO
           
           ### 📋 Notes
           - Automated build triggered by ${{ github.event_name }}
