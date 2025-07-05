@@ -13,7 +13,7 @@ on:
     - cron: "38 0 * * *"
 
 env:
-  WANTEDVERSION: IPv4
+  WANTEDVERSION: IPv6
   REMOTE_REPOSITORY: pesa1234/openwrt
   CONFIG_FILE: mt6000.config
   GH_TOKEN: ${{ github.token }}
@@ -104,7 +104,7 @@ jobs:
 
       - name: Create release
         run: |
-          [ "${{ env.WANTEDVERSION }}" = "IPv4" ] && BUILDINFO="- IPv6 and DHCPv6 **DISABLED and partially REMOVED**\n- odhcp, upnp, iptables, avahi, samba, usb storage, ppp... **REMOVED**"
+          [ "${{ env.WANTEDVERSION }}" = "IPv6" ] && BUILDINFO="- IPv6 and DHCPv6 **DISABLED and partially REMOVED**\n- odhcp, upnp, iptables, avahi, samba, usb storage, ppp... **REMOVED**"
           
           RELEASE_DATE=$(date +%F)
           gh release delete "${{ needs.check_commits.outputs.release_prefix }}-${RELEASE_DATE}" --cleanup-tag -y --repo "${{ github.repository }}" || ${{ true }}
